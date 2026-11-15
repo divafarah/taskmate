@@ -24,3 +24,13 @@ Untuk membuat hasil build:
 ```bash
 npm run build
 ```
+Fitur Aplikasi
+1. Menampilkan daftar tugas kuliah.
+2. Menambahkan tugas baru.
+3. Mengedit informasi tugas.
+4. Menghapus tugas.
+5. Mengubah status tugas menjadi Selesai atau Belum Selesai.
+6. Memfilter tugas berdasarkan status.
+7. Menyimpan data tugas menggunakan localStorage.
+Teknologi Penyimpanan
+TaskMate menggunakan localStorage browser untuk menyimpan data tugas sehingga data tetap tersedia ketika halaman dimuat ulang pada browser yang sama.
