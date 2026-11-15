@@ -15,8 +15,8 @@ type TaskStatus = 'Belum Selesai' | 'Selesai'
 type FilterType = 'Semua' | TaskStatus
 
 // 3. Primitive Types
-const appName: string = 'TaskMate'
-const appVersion: string = '1.0.0'
+const appName: string = import.meta.env.VITE_APP_NAME
+const appVersion: string = import.meta.env.VITE_APP_VERSION
 let totalTasks: number = 0
 
 // 4. Array
