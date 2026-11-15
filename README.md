@@ -34,3 +34,11 @@ Fitur Aplikasi
 7. Menyimpan data tugas menggunakan localStorage.
 Teknologi Penyimpanan
 TaskMate menggunakan localStorage browser untuk menyimpan data tugas sehingga data tetap tersedia ketika halaman dimuat ulang pada browser yang sama.
+Cara Menggunakan TaskMate
+1. Buka aplikasi TaskMate melalui browser.
+2. Isi judul tugas, mata kuliah, deadline, dan deskripsi.
+3. Klik tombol Tambah Tugas.
+4. Gunakan tombol Edit untuk mengubah tugas.
+5. Gunakan tombol Hapus untuk menghapus tugas.
+6. Tandai tugas sebagai Selesai jika sudah dikerjakan.
+7. Gunakan filter untuk melihat tugas berdasarkan status.
