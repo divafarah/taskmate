@@ -22,7 +22,7 @@ let totalTasks: number = 0
 // 4. Array
 let tasks: Task[] = loadData<Task[]>('taskmate-tasks', [])
 
-// 5. Generic Function
+// 5. Generic Function untuk mengambil data
 function loadData<T>(key: string, fallback: T): T {
   try {
     const data = localStorage.getItem(key)
@@ -32,7 +32,7 @@ function loadData<T>(key: string, fallback: T): T {
   }
 }
 
-// Generic untuk menyimpan data
+// Generic Function untuk menyimpan data
 function saveData<T>(key: string, data: T): void {
   localStorage.setItem(key, JSON.stringify(data))
 }
@@ -44,7 +44,7 @@ if (!app) {
   throw new Error('Elemen #app tidak ditemukan')
 }
 
-// Filter tugas
+// Filter dan mode edit
 let currentFilter: FilterType = 'Semua'
 let editingId: number | null = null
 
@@ -156,6 +156,61 @@ app.innerHTML = `
       </div>
     </section>
 
+    <!-- PENJELASAN TEKNOLOGI -->
+    <section class="technology-section">
+      <div class="technology-heading">
+        <p class="eyebrow">PENGEMBANGAN APLIKASI</p>
+        <h2>Teknologi di Balik TaskMate</h2>
+        <p>Teknologi yang digunakan dalam proses pengembangan aplikasi TaskMate.</p>
+      </div>
+
+      <div class="technology-grid">
+        <article class="technology-card">
+          <h3>Git dan GitHub</h3>
+          <p>Git digunakan untuk mengelola versi kode, mencatat perubahan, membuat branch, dan menggabungkan kode. GitHub digunakan untuk menyimpan repository secara online serta mengelola kolaborasi melalui Pull Request.</p>
+        </article>
+
+        <article class="technology-card">
+          <h3>npm (Node Package Manager)</h3>
+          <p>npm digunakan untuk mengelola package atau library yang dibutuhkan dalam pengembangan aplikasi, memasang dependency, dan menjalankan perintah melalui script pada package.json.</p>
+        </article>
+
+        <article class="technology-card">
+          <h3>TypeScript</h3>
+          <p>TypeScript merupakan pengembangan JavaScript yang memiliki sistem tipe data. TaskMate menggunakan interface, type alias, union type, array, primitive types, dan generic function agar kode lebih terstruktur.</p>
+        </article>
+
+        <article class="technology-card">
+          <h3>Vite</h3>
+          <p>Vite merupakan build tool yang menyediakan development server untuk menjalankan aplikasi selama proses pengembangan serta membantu menghasilkan file aplikasi yang siap dipublikasikan.</p>
+        </article>
+
+        <article class="technology-card">
+          <h3>Environment Variables</h3>
+          <p>Environment variables digunakan untuk mengatur konfigurasi aplikasi di luar kode utama. TaskMate menggunakan file .env untuk menyimpan nama dan versi aplikasi serta .env.example sebagai contoh konfigurasi.</p>
+        </article>
+      </div>
+
+      <div class="process-card">
+        <h3>Peran Compiler, Transpiler, dan Bundler</h3>
+
+        <div class="process-item">
+          <strong>Compiler</strong>
+          <p>TypeScript Compiler (tsc) memeriksa tipe data dan membantu mendeteksi kesalahan pada kode TypeScript.</p>
+        </div>
+
+        <div class="process-item">
+          <strong>Transpiler</strong>
+          <p>Mengubah kode TypeScript menjadi JavaScript agar dapat dijalankan oleh browser.</p>
+        </div>
+
+        <div class="process-item">
+          <strong>Bundler</strong>
+          <p>Vite menggunakan proses bundling untuk menggabungkan dan mengoptimalkan JavaScript, CSS, serta aset lainnya menjadi hasil build yang siap dipublikasikan.</p>
+        </div>
+      </div>
+    </section>
+
     <footer>
       <p>Dibuat dengan 💜 untuk menemani kegiatan kuliah.</p>
       <p>TaskMate © 2026</p>
@@ -164,7 +219,7 @@ app.innerHTML = `
 `
 
 // Mengambil elemen form
-const form = document.querySelector<HTMLFormElement>('#task-form')!
+const taskForm = document.querySelector<HTMLFormElement>('#task-form')!
 const titleInput = document.querySelector<HTMLInputElement>('#task-title')!
 const courseInput = document.querySelector<HTMLInputElement>('#task-course')!
 const deadlineInput = document.querySelector<HTMLInputElement>('#task-deadline')!
@@ -172,88 +227,80 @@ const descriptionInput = document.querySelector<HTMLTextAreaElement>('#task-desc
 const taskList = document.querySelector<HTMLDivElement>('#task-list')!
 const submitBtn = document.querySelector<HTMLButtonElement>('#submit-btn')!
 const cancelBtn = document.querySelector<HTMLButtonElement>('#cancel-btn')!
+const formTitle = document.querySelector<HTMLHeadingElement>('#form-title')!
 
-// Menghitung dan menampilkan statistik
-function renderStats(): void {
+// Memperbarui statistik tugas
+function updateStats(): void {
   totalTasks = tasks.length
 
-  const completed = tasks.filter(task => task.completed).length
-  const pending = totalTasks - completed
+  const pendingTasks = tasks.filter(task => !task.completed).length
+  const completedTasks = tasks.filter(task => task.completed).length
 
   document.querySelector('#total-count')!.textContent = String(totalTasks)
-  document.querySelector('#completed-count')!.textContent = String(completed)
-  document.querySelector('#pending-count')!.textContent = String(pending)
+  document.querySelector('#pending-count')!.textContent = String(pendingTasks)
+  document.querySelector('#completed-count')!.textContent = String(completedTasks)
 }
 
-// Menampilkan daftar tugas
+// Menyimpan dan memperbarui tampilan tugas
 function renderTasks(): void {
   const filteredTasks = tasks.filter(task => {
     if (currentFilter === 'Semua') return true
-    return currentFilter === 'Selesai'
-      ? task.completed
-      : !task.completed
+    if (currentFilter === 'Selesai') return task.completed
+    return !task.completed
   })
 
   if (filteredTasks.length === 0) {
     taskList.innerHTML = `
       <div class="empty-state">
-        <div>🌷</div>
-        <h3>Belum ada tugas</h3>
-        <p>Belum ada tugas nih. Yuk, tambahkan tugas pertamamu!</p>
+        <span>📭</span>
+        <p>Belum ada tugas di kategori ini.</p>
       </div>
     `
   } else {
-    taskList.innerHTML = filteredTasks.map(task => {
-      const status: TaskStatus = task.completed
-        ? 'Selesai'
-        : 'Belum Selesai'
-
-      return `
-        <article class="task-item ${task.completed ? 'completed' : ''}">
-          <div class="task-top">
-            <span class="status ${task.completed ? 'done' : 'pending'}">
-              ${status}
+    taskList.innerHTML = filteredTasks.map(task => `
+      <article class="task-item ${task.completed ? 'completed' : ''}">
+        <div class="task-info">
+          <div class="task-title-row">
+            <h3>${escapeHTML(task.title)}</h3>
+            <span class="task-status ${task.completed ? 'done' : 'pending'}">
+              ${task.completed ? 'Selesai' : 'Belum Selesai'}
             </span>
-            <span class="task-date">📅 ${escapeHTML(task.deadline)}</span>
           </div>
+          <p class="task-course">${escapeHTML(task.course)}</p>
+          <p class="task-deadline">📅 ${escapeHTML(task.deadline)}</p>
+          ${task.description ? `<p class="task-description">${escapeHTML(task.description)}</p>` : ''}
+        </div>
 
-          <h3>${escapeHTML(task.title)}</h3>
-          <p class="course-name">📚 ${escapeHTML(task.course)}</p>
-          <p class="task-description">
-            ${escapeHTML(task.description || 'Tidak ada deskripsi')}
-          </p>
-
-          <div class="task-actions">
-            <button class="btn-done" data-action="toggle" data-id="${task.id}">
-              ${task.completed ? '↩ Belum Selesai' : '✓ Selesaikan'}
-            </button>
-            <button class="btn-edit" data-action="edit" data-id="${task.id}">
-              ✏ Edit
-            </button>
-            <button class="btn-delete" data-action="delete" data-id="${task.id}">
-              🗑 Hapus
-            </button>
-          </div>
-        </article>
-      `
-    }).join('')
+        <div class="task-actions">
+          <button class="action-btn complete-btn" data-id="${task.id}" title="Ubah status">
+            ${task.completed ? '↩️' : '✅'}
+          </button>
+          <button class="action-btn edit-btn" data-id="${task.id}" title="Edit tugas">
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" data-id="${task.id}" title="Hapus tugas">
+            🗑️
+          </button>
+        </div>
+      </article>
+    `).join('')
   }
 
-  renderStats()
+  updateStats()
   saveData<Task[]>('taskmate-tasks', tasks)
 }
 
-// Mengatur ulang form
+// Mengosongkan form
 function resetForm(): void {
-  form.reset()
+  taskForm.reset()
   editingId = null
-  document.querySelector('#form-title')!.textContent = 'Tambah Tugas'
+  formTitle.textContent = 'Tambah Tugas'
   submitBtn.textContent = '+ Tambahkan Tugas'
   cancelBtn.hidden = true
 }
 
-// Menambahkan atau mengedit tugas
-form.addEventListener('submit', (event: SubmitEvent) => {
+// Menambahkan dan mengedit tugas
+taskForm.addEventListener('submit', (event: SubmitEvent) => {
   event.preventDefault()
 
   const title = titleInput.value.trim()
@@ -286,70 +333,73 @@ form.addEventListener('submit', (event: SubmitEvent) => {
   renderTasks()
 })
 
-// Tombol batal edit
+// Membatalkan edit
 cancelBtn.addEventListener('click', resetForm)
 
-// Mengatur aksi edit, hapus, dan status tugas
+// Tombol filter
+document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    const selectedFilter = button.dataset.filter as FilterType
+    currentFilter = selectedFilter
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('active')
+    })
+
+    button.classList.add('active')
+    renderTasks()
+  })
+})
+
+// Aksi edit, hapus, dan ubah status
 taskList.addEventListener('click', (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  const button = target.closest<HTMLButtonElement>('button[data-action]')
+  const button = target.closest<HTMLButtonElement>('button[data-id]')
 
   if (!button) return
 
   const id = Number(button.dataset.id)
-  const action = button.dataset.action
-  const selectedTask = tasks.find(task => task.id === id)
+  const task = tasks.find(item => item.id === id)
 
-  if (!selectedTask) return
+  if (!task) return
 
-  if (action === 'toggle') {
-    tasks = tasks.map(task =>
-      task.id === id
-        ? { ...task, completed: !task.completed }
-        : task
+  if (button.classList.contains('complete-btn')) {
+    tasks = tasks.map(item =>
+      item.id === id
+        ? { ...item, completed: !item.completed }
+        : item
     )
   }
 
-  if (action === 'delete') {
-    const confirmation = confirm('Yakin ingin menghapus tugas ini?')
-    if (!confirmation) return
-
-    tasks = tasks.filter(task => task.id !== id)
-  }
-
-  if (action === 'edit') {
+  if (button.classList.contains('edit-btn')) {
     editingId = id
 
-    titleInput.value = selectedTask.title
-    courseInput.value = selectedTask.course
-    deadlineInput.value = selectedTask.deadline
-    descriptionInput.value = selectedTask.description
+    titleInput.value = task.title
+    courseInput.value = task.course
+    deadlineInput.value = task.deadline
+    descriptionInput.value = task.description
 
-    document.querySelector('#form-title')!.textContent = 'Edit Tugas'
+    formTitle.textContent = 'Edit Tugas'
     submitBtn.textContent = 'Simpan Perubahan'
     cancelBtn.hidden = false
 
     titleInput.focus()
-    return
+  }
+
+  if (button.classList.contains('delete-btn')) {
+    const confirmation = window.confirm('Yakin ingin menghapus tugas ini?')
+
+    if (confirmation) {
+      tasks = tasks.filter(item => item.id !== id)
+
+      if (editingId === id) {
+        resetForm()
+      }
+    }
   }
 
   renderTasks()
 })
 
-// Filter daftar tugas
-document.querySelectorAll<HTMLButtonElement>('.filter-btn')
-  .forEach(button => {
-    button.addEventListener('click', () => {
-      currentFilter = button.dataset.filter as FilterType
-
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active')
-      })
-
-      button.classList.add('active')
-      renderTasks()
-    })
-  })
-
-// Tampilan awal aplikasi
+// Menampilkan tugas saat aplikasi dibuka
 renderTasks()
